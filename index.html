@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#070a14">
+<meta name="description" content="Worm Cash — слитерио на рубли: собирай массу, фиксируй деньги, играй с друзьями онлайн или с ботами">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Worm Cash — червячки на рубли</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23070a14'/%3E%3Ccircle cx='36' cy='52' r='18' fill='%2339d353'/%3E%3Ccircle cx='58' cy='50' r='20' fill='%2339d353'/%3E%3Ccircle cx='42' cy='44' r='6' fill='%23fff'/%3E%3Ccircle cx='62' cy='43' r='6' fill='%23fff'/%3E%3Ccircle cx='43' cy='45' r='3' fill='%23000'/%3E%3Ccircle cx='63' cy='44' r='3' fill='%23000'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script>
+/* Ранний перехват ошибок — виден сразу, ещё до загрузки игры */
+(function () {
+  var buf = [];
+  function show() {
+    var el = document.getElementById('jserr');
+    if (!el) return;
+    el.style.display = 'block';
+    el.textContent = buf.join('\n');
+  }
+  window.addEventListener('error', function (ev) {
+    if (ev && ev.target && ev.target.src) buf.push('Не загрузилось: ' + ev.target.src);
+    else buf.push('JS: ' + (ev.message || '?') + ' @' + String(ev.filename || '').split('/').pop() + ':' + (ev.lineno || '?'));
+    show();
+  }, true);
+})();
+</script>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- ======== HUD (в игре) ======== -->
+<div id="hud" class="hidden">
+  <div class="hud-tl">
+    <div class="chip" id="hudBank">💰 0₽</div>
+    <button class="chip chip-btn" id="hudMenuBtn" title="Пауза">☰</button>
+  </div>
+  <div class="hud-tc">
+    <div class="chip" id="hudRoom">🤖 боты</div>
+  </div>
+  <div class="hud-tr">
+    <div class="panel" id="leaderboard">
+      <div class="lb-title">Топ червей</div>
+      <div id="lbList"></div>
+    </div>
+  </div>
+  <button id="cashBtn">ЗАБРАТЬ 0₽</button>
+  <button id="boostBtn">УСКОРЕНИЕ</button>
+  <div id="hintChip" class="chip">мышь — направление · ЛКМ / пробел — ускорение</div>
+  <div id="minimapWrap"><canvas id="minimap" width="132" height="132"></canvas></div>
+</div>
+
+<!-- ======== ГЛАВНОЕ МЕНЮ ======== -->
+<div id="menu" class="overlay">
+  <div class="menu-card">
+    <div class="logo">WORM<span>CASH</span></div>
+    <div class="tagline">слитерио на рубли · ешь, расти, забирай ₽</div>
+
+    <div class="bal-row" id="menuBalance">💰 Баланс: 500₽</div>
+
+    <div class="field">
+      <label for="nickInput">Ник</label>
+      <input id="nickInput" maxlength="12" placeholder="Червяк" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn secondary" id="skinsBtn">🎨 Скины</button>
+      <button class="btn secondary" id="helpBtn">❓ Как играть</button>
+    </div>
+
+    <div class="mode-row" id="modeRow">
+      <button class="mode active" data-mode="online">🌐 Онлайн</button>
+      <button class="mode" data-mode="solo">🤖 С ботами</button>
+    </div>
+
+    <div class="field" id="roomField">
+      <label for="roomInput">Комната (код для друзей)</label>
+      <div class="room-row">
+        <input id="roomInput" maxlength="16" placeholder="main" autocomplete="off" spellcheck="false">
+        <button class="btn icon" id="roomRand" title="Случайная комната">🎲</button>
+      </div>
+      <div class="hint">Кинь одинаковый код друзьям — окажетесь в одной змейке-вселенной</div>
+    </div>
+
+    <div class="field" id="stakeField">
+      <label for="stakeInput">Ставка за жизнь</label>
+      <input id="stakeInput" type="number" min="150" max="1000000" step="10" value="150" inputmode="numeric" autocomplete="off">
+      <div class="hint">От 150₽. Умрёшь — сгорит. Заберёшь деньги — вернётся ставка + выигрыш.</div>
+    </div>
+
+    <button class="btn primary big" id="playBtn">ИГРАТЬ · −150₽</button>
+    <button class="btn bonus hidden" id="bonusBtn">🎁 Бонус +500₽</button>
+  </div>
+</div>
+
+<!-- ======== СПИСОК КОМНАТ (левая панель) ======== -->
+<button id="roomsTab" title="Список активных комнат">🌐<span>КОМНАТЫ</span></button>
+<div id="roomsPanel" class="hidden">
+  <div class="rp-head">🌐 Комнаты онлайн<button class="close" id="roomsClose">✕</button></div>
+  <div id="roomsList"></div>
+  <div class="rp-hint">Нажми на комнату, чтобы выбрать её. Список живой — комнаты появляются, пока в них играют.</div>
+</div>
+
+<!-- ======== СКИНЫ ======== -->
+<div id="skinsModal" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">🎨 Скины</div>
+      <div class="bal-chip" id="skinsBalance">0₽</div>
+      <button class="close" data-close="skinsModal">✕</button>
+    </div>
+    <div class="skin-grid" id="skinGrid"></div>
+  </div>
+</div>
+
+<!-- ======== ПОМОЩЬ ======== -->
+<div id="helpModal" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">❓ Как играть</div>
+      <button class="close" data-close="helpModal">✕</button>
+    </div>
+    <div class="help-body">
+      <p><b>🎮 Управление.</b> Мышь или палец — направление движения. ЛКМ / пробел / кнопка «УСКОРЕНИЕ» — рывок (тратит массу, ничего не роняет).</p>
+      <p><b>💰 Ставка.</b> Вход стоит сколько поставишь (минимум <b>150₽</b>). Ешь шарики и остатки червей: <b>1 массы = 1₽</b>. Плашка над головой показывает, сколько ₽ ты собрал за эту жизнь — у всех она начинается с 0₽.</p>
+      <p><b>💀 Смерть.</b> Врезался головой в чужое тело или в красную границу — ставка сгорела, и всё собранное пропало вместе с червём.</p>
+      <p><b>🏦 Касса.</b> Кнопка «ЗАБРАТЬ X₽» внизу экрана: на баланс идут собранные ₽ <b>плюс возврат ставки</b>. Жадность наказывается, трусость — тоже.</p>
+      <p><b>☠️ Убийства.</b> Подрежь чужую голову своим телом — червяк рассыпется россыпью золотых крошек на <b>×1.1 от его плашки</b>, съешь их быстрее конкурентов.</p>
+      <p><b>🌐 Онлайн.</b> Выбери режим «Онлайн» и создай комнату с любым кодом. Друзья вводят тот же код — вы в одном мире. Если сеть отвалилась, автоматически подхватываются боты.</p>
+      <p><b>📱 Телефон.</b> Веди пальцем по экрану — червяк едет за пальцем. Кнопка ускорения — справа внизу.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======== ПАУЗА ======== -->
+<div id="pauseModal" class="overlay hidden">
+  <div class="modal small">
+    <div class="modal-title">Пауза</div>
+    <div class="pause-money" id="pauseMoney">0₽</div>
+    <button class="btn primary" id="pauseCash">Забрать и выйти</button>
+    <button class="btn secondary" id="pauseResume">Продолжить</button>
+  </div>
+</div>
+
+<!-- ======== ИТОГИ ЖИЗНИ ======== -->
+<div id="overModal" class="overlay hidden">
+  <div class="modal small">
+    <div class="over-title" id="overTitle"></div>
+    <div class="over-sub" id="overSub"></div>
+    <div class="over-stats" id="overStats"></div>
+    <button class="btn primary big" id="againBtn">Ещё раз · −150₽</button>
+    <button class="btn secondary" id="toMenuBtn">В меню</button>
+    <button class="btn bonus hidden" id="bonusBtn2">🎁 Бонус +500₽</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="jserr"></div>
+<noscript><div style="position:fixed;inset:0;background:#070a14;color:#fff;display:flex;align-items:center;justify-content:center;font-family:sans-serif">Включи JavaScript — без него червячки не поедут 🪱</div></noscript>
+
+<script async src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/skins.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/net.js"></script>
+<script src="js/game.js"></script>
+<script src="js/bots.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Worm Cash — правила и обновления</title>
+<style>
+  :root { --bg:#070a14; --card:#111627; --line:rgba(255,255,255,.09); --gold:#ffd23d; --green:#39d353; --red:#ff5a5a; --txt:#e8ecf6; --dim:rgba(255,255,255,.55); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:radial-gradient(1200px 700px at 50% -10%, #14204a 0%, var(--bg) 55%); color:var(--txt); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; padding:32px 16px 60px; }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:34px; margin:0 0 4px; font-style:italic; letter-spacing:1px; }
+  h1 span { background:linear-gradient(90deg,var(--green),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .tag { color:var(--dim); font-size:14px; margin-bottom:26px; }
+  h2 { font-size:18px; margin:30px 0 12px; color:#fff; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .card b { display:block; margin-bottom:6px; font-size:15px; }
+  .card p { margin:0; font-size:13.5px; line-height:1.5; color:var(--dim); }
+  .pill { display:inline-block; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:700; margin-bottom:8px; }
+  .pill.g { background:rgba(57,211,83,.15); color:#7df09a; }
+  .pill.y { background:rgba(255,210,61,.14); color:var(--gold); }
+  .pill.r { background:rgba(255,90,90,.14); color:#ff9d9d; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:13.5px; }
+  th,td { padding:9px 12px; text-align:left; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  tr:last-child td { border-bottom:none; }
+  td b.gold { color:var(--gold); }
+  ol { padding-left:22px; line-height:1.7; font-size:14px; color:var(--txt); }
+  .note { font-size:12.5px; color:var(--dim); margin-top:8px; }
+  .kbd { background:rgba(255,255,255,.08); border:1px solid var(--line); border-radius:6px; padding:1px 7px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>WORM<span>CASH</span> 🪱</h1>
+  <div class="tag">слитерио на рубли — ешь, расти, забирай ₽. Статика: заливается на GitHub Pages без сервера.</div>
+
+  <h2>Свежие правки</h2>
+  <div class="grid">
+    <div class="card"><span class="pill g">Честный лут</span><b>Дроп = плашка</b><p>С убитого червя падает ровно то, что написано у него над головой. Было 34₽ — выпало 34₽ золотыми шариками. Никаких «китов из воздуха».</p></div>
+    <div class="card"><span class="pill y">Своя ставка</span><b>Вход выбираешь ты</b><p>В меню поле «Ставка за жизнь»: вводишь сколько хочешь (от 10₽, не больше баланса) — столько списывается при входе. Кнопка «ИГРАТЬ» всегда показывает актуальную сумму.</p></div>
+    <div class="card"><span class="pill r">Боты поумнели</span><b>Смотрят вперёд</b><p>Оценивают точку, где будут через ~0.35с, выбирают свободную сторону при побеге, охотятся с перехватом (целятся перед головой жертвы), паникуют и бустят вплотную к угрозе.</p></div>
+  </div>
+
+  <h2>Экономика за жизнь</h2>
+  <table>
+    <tr><th>Событие</th><th>Что происходит с деньгами</th></tr>
+    <tr><td>Вход в игру</td><td>Списывается твоя ставка (минимум <b class="gold">10₽</b>)</td></tr>
+    <tr><td>Съел шарик</td><td>+2₽ на плашку над головой (1 массы = 1₽)</td></tr>
+    <tr><td>Убил червя</td><td>Он рассыпается россыпью золотых крошек <b class="gold">на ×1.1 его плашки</b> — съедай быстрее конкурентов</td></tr>
+    <tr><td>Ускорение</td><td>Тратит <b class="gold">массу</b> (≈14/сек), ничего не роняет — катаешься быстрее, но расти не растёшь</td></tr>
+    <tr><td>«ЗАБРАТЬ»</td><td>На баланс: собранное <b class="gold">+ возврат ставки</b>. Жизнь заканчивается</td></tr>
+    <tr><td>Смерть</td><td>Ставка и всё собранное <b style="color:var(--red)">сгорают</b></td></tr>
+    <tr><td>Банкрот</td><td>Кнопка «Подаяние +150₽» вернёт в строй</td></tr>
+  </table>
+
+  <h2>Как играть</h2>
+  <div class="grid">
+    <div class="card"><b>Компьютер</b><p>Мышь — направление, <span class="kbd">ЛКМ</span> / <span class="kbd">Пробел</span> — ускорение, <span class="kbd">Esc</span> — пауза (в соло).</p></div>
+    <div class="card"><b>Телефон</b><p>Веди пальцем по экрану — червяк едет за пальцем. Круглая кнопка «УСКОРЕНИЕ» справа внизу.</p></div>
+    <div class="card"><b>С друзьями</b><p>Режим «Онлайн» → придумай код комнаты → кинь друзьям ссылку <span class="kbd">?room=код</span> или просто код. Падение сети — автоматом боты.</p></div>
+  </div>
+
+  <h2>Заливка на GitHub Pages — да, всё так просто</h2>
+  <ol>
+    <li>Заведи аккаунт на <b>github.com</b> (если ещё нет) и нажми <b>New repository</b>. Имя любое, например <code>worm-cash</code>, галку «Add README» можно не ставить.</li>
+    <li>На странице репозитория жми <b>«Add file» → «Upload files»</b> и перетащи <b>всё содержимое</b> папки wormcash: <code>index.html</code>, <code>style.css</code>, папку <code>js/</code>, <code>about.html</code>, <code>README.md</code>. Важно: <code>js/</code> должна попасть в репозиторий как папка, без неё игра не заведётся.</li>
+    <li>Жми зелёную кнопку <b>«Commit changes»</b> внизу.</li>
+    <li>Открой <b>Settings → Pages</b> (в левом меню). В «Build and deployment» выбери Source: <b>Deploy from a branch</b>, ветка <b>main</b>, папка <b>/ (root)</b> → Save.</li>
+    <li>Подожди 1–3 минуты и обнови страницу — сверху появится зелёная плашка с адресом вида <code>https://твой-ник.github.io/worm-cash/</code>. Это и есть твоя игра.</li>
+  </ol>
+  <p class="note">Ссылку можно кидать друзьям — телефон откроет её без установки. Для игры вместе: в меню режим «Онлайн» + одинаковый код комнаты, либо сразу ссылка с <code>?room=код</code>. Изменить игру позже = загрузить новые файлы в тот же репозиторий (Pages переразвернётся сам). Локально проверить можно двойным кликом по index.html — интернет нужен только для онлайна.</p>
+
+  <p class="note">Файл игры — <code>index.html</code>, подробности и тюнинг констант — в <code>README.md</code>.</p>
+</div>
+</body>
+</html>
